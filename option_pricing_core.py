@@ -39,6 +39,27 @@ class HybridAnalysisConfig:
     DELTA_DEEP_ITM = 0.75
     DELTA_ATM_LOWER = 0.30
 
+    # [INSERT THIS NEW METHOD INSIDE HybridAnalysisConfig CLASS]
+    @staticmethod
+    def get_delta_implication(delta, option_type='call'):
+        """Determine directional risk based on Delta."""
+        if np.isnan(delta): return "N/A"
+        
+        abs_delta = abs(delta)
+        direction = "Long" if delta > 0 else "Short"
+        
+        # Determine sensitivity description
+        if abs_delta > 0.75:
+             sensitivity = "High directional sensitivity (Acts like the underlying)."
+        elif abs_delta < 0.30:
+             sensitivity = "Low directional sensitivity (Far OTM)."
+        else:
+             sensitivity = "Moderate directional sensitivity."
+
+        return (f"{sensitivity}\n"
+                f"  → Delta: {delta:.2f} ({abs_delta*100:.1f}% probability of expiring ITM)\n"
+                f"  → Equivalent to holding {abs_delta*100:.0f} shares of the underlying ({direction}).")
+
     @staticmethod
     def get_gamma_implication(gamma):
         """Determine delta risk based on Gamma absolute threshold."""
@@ -722,8 +743,22 @@ def calculate_implied_volatility(market_price, option_type, F_or_S, K, T, r, q, 
                     
         # *** FIX 1: ARBITRAGE FIX (Return NaN to prevent broken Greeks) ***
         # If market price is below floor (arbitrage), IV is undefined.
-        if market_price < floor - tolerance: 
-            return np.nan 
+        # [REPLACE THE EXISTING ARBITRAGE CHECK BLOCK WITH THIS]
+        
+        # *** FIX 1: ARBITRAGE FIX (Modified) ***
+        # If market price is below floor (intrinsic value), IV is technically undefined.
+        # Request: If difference is <= 5, clamp price to allow calculation.
+        floor_diff = floor - market_price
+        
+        if market_price < floor - tolerance:
+            if floor_diff <= 5.0:
+                # Clamp market price to slightly above floor to allow Newton-Raphson to function
+                # (Solver needs Price > Intrinsic to find a valid Volatility)
+                market_price = floor + 0.001 
+            else:
+                # Gap is too large (> 5), return NaN as it is a hard arbitrage
+                return np.nan
+
 
         sigma_guess = 0.20
         
@@ -1255,4 +1290,5 @@ def run_options_analysis():
 
 # Call the function to test the execution flow
 #run_options_analysis() <-- commented out to prevent execution during import
+
 
