@@ -405,13 +405,13 @@ with tab1:
         st.subheader("Market (PCR) Analysis")
         pcr = r['pcr']
         if pcr > HybridAnalysisConfig.PCR_BULLISH:
-            sent = ("Contrarian Bullish", "success", "Excessive Put buying")
+            sent = ("📈 **Contrarian Bullish**: The higher PCR suggests heavy Put buying (hedging or bearish bets). Often, when everyone is hedged, the market is positioned for a rise.", "success", "Excessive Put buying")
             sent_color = "green"
         elif pcr < HybridAnalysisConfig.PCR_BEARISH:
-            sent = ("Contrarian Bearish", "danger", "Excessive Call buying")
+            sent = ("📉 **Contrarian Bearish**: The lower PCR suggests heavy Call buying (speculation). Excessive bullishness can make the market vulnerable to a correction.", "danger", "Excessive Call buying")
             sent_color = "red"
         else:
-            sent = ("Neutral", "secondary", "Balanced activity")
+            sent = ("⚖️ **Neutral**: Balanced put-call ratio indicates market equilibrium or indecision.", "secondary", "Balanced activity")
             sent_color = "gray"
         
         st.metric("PCR Ratio", f"{pcr:.2f}", sent[2])
@@ -524,4 +524,5 @@ with tab4:
     st.plotly_chart(create_greek_chart(r, 'Gamma', 'Gamma'), use_container_width=True)
     st.plotly_chart(create_greek_chart(r, 'Vega', 'Vega'), use_container_width=True)
     st.plotly_chart(create_greek_chart(r, 'Theta', 'Theta (Daily)'), use_container_width=True)
+
     st.plotly_chart(create_greek_chart(r, 'Rho', 'Rho (per 1% rate change)'), use_container_width=True)
