@@ -47,9 +47,9 @@ def create_valuation_display(mispricing_value):
         return "<span style='color:gray;'>N/A</span>"
 
     if mispricing_value > HybridAnalysisConfig.MISPRICING_BUY_THRESHOLD:
-        return f"<span style='color:green; font-weight:bold;'>UNDERVALUED ↑ (₹{mispricing_value:+.2f})</span>"
+        return f"<span style='color:green; font-weight:bold;'>UNDERVALUED (Potential Buy) ↑ (₹{mispricing_value:+.2f})</span>"
     elif mispricing_value < HybridAnalysisConfig.MISPRICING_SELL_THRESHOLD:
-        return f"<span style='color:red; font-weight:bold;'>OVERVALUED ↓ (₹{mispricing_value:+.2f})</span>"
+        return f"<span style='color:red; font-weight:bold;'>OVERVALUED (Potential Sell) ↓ (₹{mispricing_value:+.2f})</span>"
     else:
         return f"<span style='color:gray; font-weight:bold;'>FAIRLY VALUED (₹{mispricing_value:+.2f})</span>"
 
@@ -396,7 +396,7 @@ with tab1:
         })
         st.dataframe(
             prices_df.style.format({'Call': '₹{:.2f}', 'Put': '₹{:.2f}'})
-                           .apply(lambda x: ['background-color: #fff3cd; font-weight: bold;' if x.name == 0 else '' for i in x], axis=1),
+                           .apply(lambda x: ['background-color: #008080; font-weight: bold;' if x.name == 0 else '' for i in x], axis=1),
             use_container_width=True, 
             hide_index=True
         )
@@ -480,12 +480,14 @@ with tab3:
     col1, col2 = st.columns(2)
     with col1:
         st.markdown("#### Call Option Risks (at IV)")
+        st.markdown(f"**Delta:** {format_risk_text(HybridAnalysisConfig.get_delta_implication(giv['delta_call'], 'Call'))}", unsafe_allow_html=True)
         st.markdown(f"**Gamma:** {HybridAnalysisConfig.get_gamma_implication(giv['gamma_call'])}")
         st.markdown(f"**Vega:** {format_risk_text(HybridAnalysisConfig.get_vega_implication(giv['vega_call'], S))}", unsafe_allow_html=True)
         st.markdown(f"**Theta:** {format_risk_text(HybridAnalysisConfig.get_theta_implication(giv['theta_call'], r['call_iv']))}", unsafe_allow_html=True)
         st.markdown(f"**Rho:** {format_risk_text(HybridAnalysisConfig.get_rho_implication(giv['rho_call']*100, S, 'Call', at))}", unsafe_allow_html=True)
     with col2:
         st.markdown("#### Put Option Risks (at IV)")
+        st.markdown(f"**Delta:** {format_risk_text(HybridAnalysisConfig.get_delta_implication(giv['delta_put'], 'Put'))}", unsafe_allow_html=True)
         st.markdown(f"**Gamma:** {HybridAnalysisConfig.get_gamma_implication(giv['gamma_put'])}")
         st.markdown(f"**Vega:** {format_risk_text(HybridAnalysisConfig.get_vega_implication(giv['vega_put'], S))}", unsafe_allow_html=True)
         st.markdown(f"**Theta:** {format_risk_text(HybridAnalysisConfig.get_theta_implication(giv['theta_put'], r['put_iv']))}", unsafe_allow_html=True)
@@ -497,12 +499,14 @@ with tab3:
     col3, col4 = st.columns(2)
     with col3:
         st.markdown("#### Call Option Risks (at User σ)")
+        st.markdown(f"**Delta:** {format_risk_text(HybridAnalysisConfig.get_delta_implication(gu['delta_call'], 'Call'))}", unsafe_allow_html=True)
         st.markdown(f"**Gamma:** {HybridAnalysisConfig.get_gamma_implication(gu['gamma'])}")
         st.markdown(f"**Vega:** {format_risk_text(HybridAnalysisConfig.get_vega_implication(gu['vega'], S))}", unsafe_allow_html=True)
         st.markdown(f"**Theta:** {format_risk_text(HybridAnalysisConfig.get_theta_implication(gu['theta_call'], r['call_user']))}", unsafe_allow_html=True)
         st.markdown(f"**Rho:** {format_risk_text(HybridAnalysisConfig.get_rho_implication(gu['rho_call']*100, S, 'Call', at))}", unsafe_allow_html=True)
     with col4:
         st.markdown("#### Put Option Risks (at User σ)")
+        st.markdown(f"**Delta:** {format_risk_text(HybridAnalysisConfig.get_delta_implication(gu['delta_put'], 'Put'))}", unsafe_allow_html=True)
         st.markdown(f"**Gamma:** {HybridAnalysisConfig.get_gamma_implication(gu['gamma'])}")
         st.markdown(f"**Vega:** {format_risk_text(HybridAnalysisConfig.get_vega_implication(gu['vega'], S))}", unsafe_allow_html=True)
         st.markdown(f"**Theta:** {format_risk_text(HybridAnalysisConfig.get_theta_implication(gu['theta_put'], r['put_user']))}", unsafe_allow_html=True)
@@ -526,3 +530,4 @@ with tab4:
     st.plotly_chart(create_greek_chart(r, 'Theta', 'Theta (Daily)'), use_container_width=True)
 
     st.plotly_chart(create_greek_chart(r, 'Rho', 'Rho (per 1% rate change)'), use_container_width=True)
+
